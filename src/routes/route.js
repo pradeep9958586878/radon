@@ -4,16 +4,18 @@ const userController= require("../controllers/userController")
 const mw=require("../middleware/auth")
 
 
-router.post("/users", userController.createUser  )
+router.post("/createUsers", userController.createUser  )
 
-router.post("/login", userController.loginUser)
+router.post("/loginUser", userController.loginUser)
 
 //The userId is sent by front end
-router.get("/userData/:userId",mw.jwtMiddleware, userController.getUserData)
+router.get("/userData/:userId",mw.authenticate,mw.authorise, userController.getUserData)
 
-router.put("/updateUser/:userId",mw.jwtMiddleware, userController.updateUser)
+router.put("/updateUser/:userId",mw.authenticate,mw.authorise, userController.updateUser)
 
-router.put("/deleteUser/:userId",mw.jwtMiddleware, userController.deleteUser)
+router.delete("/userDelete/:userId",mw.authenticate,mw.authorise, userController.deleteUser)
+
+router.post("/postUser/:userId",mw.authenticate,mw.authorise, userController.postMessage)
 
 
 

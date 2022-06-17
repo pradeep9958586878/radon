@@ -2,18 +2,20 @@ const jwt = require("jsonwebtoken");
 const userModel = require("../models/userModel");
 
 const createUser = async function (req, res) {
-  //You can name the req, res objects anything.
-  //but the first parameter is always the request 
-  //the second parameter is always the response
+ 
   let data = req.body;
   let savedData = await userModel.create(data);
-  console.log(req.newAtribute);
+  // console.log(abcd.newAtribute);
   res.send({ msg: savedData });
+
+    
+
 };
 
 
 
 const loginUser = async function (req, res) {
+  
   let userName = req.body.emailId;
   let password = req.body.password;
 
@@ -40,13 +42,11 @@ const loginUser = async function (req, res) {
   );
   res.setHeader("x-auth-token", token);
   res.send({ status: true, token: token });
+  
 };
 
 
-
-
 const getUserData = async function (req, res) {
-  
   let userId = req.params.userId;
   let userDetails = await userModel.findById(userId);
   if (!userDetails)
@@ -54,8 +54,6 @@ const getUserData = async function (req, res) {
 
   res.send({ status: true, data: userDetails });
 };
-
-
 
 
 const updateUser = async function (req, res) {
@@ -68,27 +66,47 @@ const updateUser = async function (req, res) {
   }
 
   let userData = req.body;
-  let updatedUser = await userModel.findOneAndUpdate({ _id: userId }, userData);
-  res.send({  data: updatedUser });
+  let updatedUser = await userModel.findOneAndUpdate({ _id: userId }, userData, {new: true});
+  res.send({ status: "User updated", data: updatedUser });
 };
 
 
 
-const deleteUser =async function(req,res){
+const postMessage = async function (req, res) {
+  let message = req.body.message
+  let userToBeModified = req.params.userId
+  let user = await userModel.findById(userToBeModified)
+  if(!user) return res.send({status: false, msg: 'No such user exists'})
+  let updatedPosts = []
+  //add the message to user's posts
+  updatedPosts.push(message)
+  let updatedUser = await userModel.findOneAndUpdate({_id: user._id},{posts: updatedPosts}, {new: true})
+  //return the updated user document
+  return res.send({status: true, data: updatedUser})
 
-  let userId = req.params.userId;
-  let user = await userModel.findById(userId);
-
-  if(!user){
-    return res.send({msg:"No Such User! Try Again.."})
-  }
-  
-  let userDelete=await userModel.findByIdAndDelete({_id:userId});
-  res.send({userDelete})
 }
 
+
+const deleteUser =async function(req,res){
+  
+  let userId=req.params.userId;
+    let user =await userModel.findById(userId)
+    console.log(user)
+     if (!user) {
+      return res.send("No such user exists");
+    }
+  let data = await userModel.findOneAndUpdate({_id:userId},
+    {isDeleted : true} , 
+    { new: true})
+    res.send({ status: true, msg: data })
+}
+
+
+
+
 module.exports.createUser = createUser;
+module.exports.loginUser = loginUser;
 module.exports.getUserData = getUserData;
 module.exports.updateUser = updateUser;
-module.exports.loginUser = loginUser;
-module.exports.deleteUser=deleteUser
+module.exports.postMessage = postMessage;
+module.exports.deleteUser=deleteUser;
